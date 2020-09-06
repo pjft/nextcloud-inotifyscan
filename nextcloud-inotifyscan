@@ -212,7 +212,10 @@ def watch(folder):
   data_prefix_len = len(data_prefix)
   scan_paths = set()
   inotifywait_proc = subprocess.Popen(
-      ['inotifywait', '--event=create,modify,move,delete', r'--exclude=/\.',
+# modify hogs the CPU with OCC calls when writing large files. close_write mitigates that,
+# at the expense of not updating file size in real-time while writing, but only when finished.
+#      ['inotifywait', '--event=create,modify,move,delete', r'--exclude=/\.',
+      ['inotifywait', '--event=create,close_write,move,delete', r'--exclude=/\.',
        '--recursive', '--quiet', '--format=%e/%f%w/', '--monitor',
        os.path.abspath(data_prefix)],   # relative path won't work
       stdout=subprocess.PIPE, bufsize=0)
